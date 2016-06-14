@@ -12,6 +12,37 @@ def get_key_values():
             key_values.append([j[0].strip(), j[1].strip()])
     return key_values
 
+known_types = {
+    "LINEV": "number",
+    "LOADPCT": "number",
+    "BCHARGE": "number",
+    "TIMELEFT": "number",
+    "MBATTCHG": "number",
+    "MINTIMEL": "number",
+    "MAXTIME": "number",
+    "OUTPUTV": "number",
+    "DWAKE": "number",
+    "LOTRANS": "number",
+    "HITRANS": "number",
+    "ALARMDEL": "number",
+    "NUMXFERS": "number",
+    "TONBATT": "number",
+    "CUMONBATT": "number",
+    "NOMINV": "number",
+    "NOMPOWER": "number"
+}
+
+
+def parse(data, key):
+    i = data.split(" ")
+    if key not in known_types:
+        i[0] = data
+    print(key)
+    if key in known_types:
+        if known_types[key] == "number":
+            i[0] = float(i[0])
+    return i
+
 
 class APCDSLink(dslink.DSLink):
     def start(self):
@@ -23,8 +54,15 @@ class APCDSLink(dslink.DSLink):
 
         for pair in key_values:
             node = super_root.create_child(pair[0])
-            node.set_type("dynamic")
-            node.set_value(pair[1])
+            if pair[0] in known_types:
+                node.set_type(known_types[pair[0]])
+                parsed = parse(pair[1], pair[0])
+                node.set_value(parsed[0])
+                if len(parsed) > 1:
+                    node.set_attribute("@unit", parsed[1])
+            else:
+                node.set_type("dynamic")
+                node.set_value(pair[1])
 
         return super_root
 
@@ -35,11 +73,21 @@ class APCDSLink(dslink.DSLink):
         for pair in key_values:
             if super_root.has_child(pair[0]):
                 node = super_root.get("/" + pair[0])
-                node.set_value(pair[1])
+                parsed = parse(pair[1], pair[0])
+                node.set_value(parsed[0])
+                if len(parsed) > 1:
+                    node.set_attribute("@unit", parsed[1])
             else:
                 node = super_root.create_child(pair[0])
-                node.set_type("dynamic")
-                node.set_value(pair[1])
+                if pair[0] in known_types:
+                    node.set_type(known_types[pair[0]])
+                    parsed = parse(pair[1], pair[0])
+                    node.set_value(parsed[0])
+                    if len(parsed) > 1:
+                        node.set_attribute("@unit", parsed[1])
+                else:
+                    node.set_type("dynamic")
+                    node.set_value(pair[1])
 
 
 if __name__ == "__main__":
