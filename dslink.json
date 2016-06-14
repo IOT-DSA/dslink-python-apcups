@@ -1,0 +1,20 @@
+{
+  "name": "dslink-python-apcups",
+  "version": "0.1.0",
+  "description": "DSLink for APC UPSes",
+  "main": "src/APCDSLink.py",
+  "engines": {
+    "python": ">=2.7.0"
+  },
+  "getDependencies": [
+    "python setup.py install"
+  ],
+  "configs": {
+    "broker": {
+      "type": "url"
+    },
+    "token": {
+      "type": "string"
+    }
+  }
+}
